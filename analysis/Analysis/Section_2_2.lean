@@ -74,7 +74,8 @@ lemma Nat.add_zero (n:Nat) : n + 0 = n := by
 /-- Lemma 2.2.3 (n+(m++) = (n+m)++). Compare with Mathlib's `Nat.add_succ`. -/
 lemma Nat.add_succ (n m:Nat) : n + (m++) = (n + m)++ := by
   -- this proof is written to follow the structure of the original text.
-  revert n; apply induction
+  revert n
+  apply induction
   . rw [zero_add, zero_add]
   intro n ih
   rw [succ_add, ih]
@@ -83,9 +84,18 @@ lemma Nat.add_succ (n m:Nat) : n + (m++) = (n + m)++ := by
 
 /-- n++ = n + 1 (Why?). Compare with Mathlib's `Nat.succ_eq_add_one` -/
 theorem Nat.succ_eq_add_one (n:Nat) : n++ = n + 1 := by
-  sorry
+  revert n
+  apply induction
+  . rewrite [zero_add]
+    rewrite [zero_succ]
+    rfl
+  intro n ih
+  rewrite [succ_add]
+  rewrite [ih]
+  rfl
 
 /-- Proposition 2.2.4 (Addition is commutative). Compare with Mathlib's `Nat.add_comm` -/
+-- congrArg {α : Sort u} {β : Sort v} {a₁ a₂ : α} (f : α → β) (h : Eq a₁ a₂) : Eq (f a₁) (f a₂)
 theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
   -- this proof is written to follow the structure of the original text.
   revert n; apply induction
@@ -97,7 +107,19 @@ theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
 /-- Proposition 2.2.5 (Addition is associative) / Exercise 2.2.1
     Compare with Mathlib's `Nat.add_assoc`. -/
 theorem Nat.add_assoc (a b c:Nat) : (a + b) + c = a + (b + c) := by
-  sorry
+  revert c
+  -- theorem Nat.induction (P : Nat → Prop) (hbase : P 0) (hind : ∀ n, P n → P (n++)) : ∀ n, P n
+  apply induction
+  . rewrite [add_zero]
+    rewrite [add_zero]
+    rfl
+  intro n
+  intro ih
+  rewrite [add_succ]
+  rewrite [add_succ]
+  rewrite [add_succ]
+  rewrite [ih]
+  rfl
 
 /-- Proposition 2.2.6 (Cancellation law).
     Compare with Mathlib's `Nat.add_left_cancel`. -/
@@ -105,13 +127,14 @@ theorem Nat.add_left_cancel (a b c:Nat) (habc: a + b = a + c) : b = c := by
   -- This proof is written to follow the structure of the original text.
   revert a; apply induction
   . intro hbc
-    rwa [zero_add, zero_add] at hbc
-  intro a ih
+    rewrite [zero_add, zero_add] at hbc
+    assumption
+  intro a
+  intro ih
   intro hbc
   rw [succ_add, succ_add] at hbc
   replace hbc := succ_cancel hbc
   exact ih hbc
-
 
 /-- (Not from textbook) Nat can be given the structure of a commutative additive monoid.
 This permits tactics such as `abel` to apply to the Chapter 2 natural numbers. -/

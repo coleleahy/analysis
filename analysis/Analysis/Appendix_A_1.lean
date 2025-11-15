@@ -15,6 +15,7 @@ An introduction to mathematical statements.  Showcases some basic tactics and Le
 
 /-- Every well-formed statement is either true or false... -/
 example (P:Prop) : (P=true) ∨ (P=false) := by simp; tauto
+example (P:Prop) : P ∨ ¬P := by tauto
 
 /-- .. but not both. -/
 example (P:Prop) : ¬ ((P=true) ∧ (P=false)) := by simp
@@ -23,9 +24,12 @@ example (P:Prop) : ¬ ((P=true) ∧ (P=false)) := by simp
 
 /-- To prove that a statement is true, it suffices to show that it is not false, -/
 example {P:Prop} (h: P ≠ false) : P = true := by simp; tauto
+example {P:Prop} (h: ¬¬P) : P = true := by simp; tauto
+example {P:Prop} (h: ¬¬P) : P := by tauto
 
 /-- while to show that a statement is false, it suffices to show that it is not true. -/
 example {P:Prop} (h: P ≠ true) : P = false := by simp; tauto
+example {P:Prop} (h: ¬P) : ¬P := by tauto
 
 /-- This statement is true, but unlikely to be very useful. -/
 example : 2 = 2 := rfl
@@ -48,16 +52,23 @@ example {X Y: Prop} (hX: X) (hY: Y) : X ∧ Y := by
   constructor
   . exact hX
   exact hY
+example {X Y: Prop} (hX: X) (hY: Y) : X ∧ Y := And.intro hX hY
+example {X Y: Prop} (hX: X) (hY: Y) : X ∧ Y := ⟨ hX, hY ⟩
 
 example {X Y: Prop} (hXY: X ∧ Y) : X := by
   exact hXY.1
+example {X Y: Prop} (hXY: X ∧ Y) : X := hXY.left
 
 example {X Y: Prop} (hXY: X ∧ Y) : Y := by
   exact hXY.2
+example {X Y: Prop} (hXY: X ∧ Y) : Y := hXY.right
 
 example {X Y: Prop} (hX: ¬ X) : ¬ (X ∧ Y) := by
   contrapose! hX
   exact hX.1
+example {X Y: Prop} (hX: ¬ X) : ¬ (X ∧ Y) :=
+  fun (hXY: X ∧ Y) =>
+  show False from hX hXY.left
 
 example {X Y: Prop} (hY: ¬ Y) : ¬ (X ∧ Y) := by
   contrapose! hY
@@ -116,7 +127,8 @@ example : 2+2 ≠ 5 := by simp
 
 example (Jane_black_hair Jane_blue_eyes:Prop) :
   (¬ (Jane_black_hair ∧ Jane_blue_eyes)) ↔ (¬ Jane_black_hair ∨  ¬ Jane_blue_eyes) := by
-  simp; tauto
+  simp
+  tauto
 
 example (x:ℤ) : ¬ (Even x ∧ x ≥ 0) ↔ (Odd x ∨ x < 0) := by
   have : ¬ Odd x ↔ Even x := Int.not_odd_iff_even
@@ -189,17 +201,22 @@ example {X Y Z:Prop} (hXY: X ↔ Y) (hXZ: X ↔ Z) : [X,Y,Z].TFAE := by
 /-- Note for the `.out` method that one indexes starting from 0, in contrast to the `tfae_have` tactic. -/
 example {X Y Z:Prop} (h: [X,Y,Z].TFAE) : X ↔ Y := by
   exact h.out 0 1
+example {X Y Z:Prop} (h: [X,Y,Z].TFAE) : X ↔ Z := by
+  exact h.out 0 2
 
 /-- Exercise A.1.1.  Fill in the first `sorry` with something reasonable. -/
-example {X Y:Prop} : ¬ ((X ∨ Y) ∧ ¬ (X ∧ Y)) ↔ sorry := by sorry
+example {X Y:Prop} : ¬ ((X ∨ Y) ∧ ¬ (X ∧ Y)) ↔ (¬(X ∨ Y) ∨ ¬¬(X ∧ Y)) := by
+  simp
+  tauto
 
 /-- Exercise A.1.2.  Fill in the first `sorry` with something reasonable. -/
-example {X Y:Prop} : ¬ (X ↔ Y) ↔ sorry := by sorry
+example {X Y:Prop} : ¬ (X ↔ Y) ↔ (¬X ∧ Y ∨ X ∧ ¬Y) := by tauto
 
 /-- Exercise A.1.3. -/
 def Exercise_A_1_3 : Decidable (∀ (X Y: Prop), (X → Y) → (¬X → ¬ Y) → (X ↔ Y)) := by
   -- the first line of this construction should be either `apply isTrue` or `apply isFalse`, depending on whether you believe the given statement to be true or false.
   sorry
+
 
 /-- Exercise A.1.4. -/
 def Exercise_A_1_4 : Decidable (∀ (X Y: Prop), (X → Y) → (¬Y → ¬ X) → (X ↔ Y)) := by
